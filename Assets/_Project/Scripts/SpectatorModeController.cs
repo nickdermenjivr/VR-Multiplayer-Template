@@ -10,8 +10,7 @@ namespace _Project.Scripts
         
         private Transform _currentPlayer;
         private bool _playersConnected;
-
-        private Transform _initialPosition;
+        private bool _firstPlayer = true;
 
         private void Start()
         {
@@ -21,15 +20,18 @@ namespace _Project.Scripts
                 return;
             }
             
-            manager.QuickJoinLobby();
             manager.playerStateChanged += PlayerStateChanged;
-            
-            _initialPosition.position = ourHeadTransform.transform.position;
-            _initialPosition.rotation = ourHeadTransform.transform.rotation;
         }
 
         private void PlayerStateChanged(ulong arg1, bool joined)
         {
+            if (_firstPlayer)
+            {
+                DeactivatePlayer();
+                _firstPlayer = false;
+                return;
+            }
+            
             if (joined)
             {
                 _currentPlayer = FindObjectOfType<XRAvatarVisuals>().transform.Find("Head");
@@ -37,8 +39,6 @@ namespace _Project.Scripts
             }
             else
             {
-                ourHeadTransform.position = _initialPosition.position;
-                ourHeadTransform.rotation = _initialPosition.rotation;
                 _playersConnected = false;
             }
         }
@@ -52,8 +52,13 @@ namespace _Project.Scripts
         }
         private void SetupSpectator()
         {
-            ourHeadTransform.transform.position = _currentPlayer.transform.position;
-            ourHeadTransform.transform.rotation = _currentPlayer.transform.rotation;
+            ourHeadTransform.position = _currentPlayer.position;
+            ourHeadTransform.rotation = _currentPlayer.rotation;
+        }
+
+        public void DeactivatePlayer()
+        {
+            FindObjectOfType<XRAvatarVisuals>().gameObject.SetActive(false);
         }
     }
 }
